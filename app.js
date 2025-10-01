@@ -1,4 +1,3 @@
-// app.js
 import express from "express";
 import dotenv from "dotenv";
 import db from "./config/dbConfig.js"; // Import DB connection
