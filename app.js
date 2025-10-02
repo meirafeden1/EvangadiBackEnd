@@ -4,6 +4,7 @@ import db from "./config/dbConfig.js"; // Import DB connection
 import authRoutes from "./routes/authRoutes.js";
 import questionRoutes from "./routes/questionRoutes.js";
 import answerRoutes from "./routes/answerRoutes.js";
+import { authenticate } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -14,20 +15,27 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-// Test database connection
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("❌ MySQL connection error:", err.message);
-  } else {
-    console.log("✅ MySQL connected successfully");
+//  Test DB connection once before starting server
+(async () => {
+  try {
+    const connection = await db.getConnection();
+    await connection.query("SELECT 1"); // lightweight check
+    console.log(" Database connected successfully");
     connection.release();
-  }
-});
 
+    // Start server only if DB is OK
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("MySQL connection error:", err.message);
+    process.exit(1); // fail fast if DB is down
+  }
+})();
 // Routes
 app.use("/api/user", authRoutes); // Authentication routes (login, signup, checkUser)
-app.use("/api/question", questionRoutes); // Question routes
-app.use("/api/answer", answerRoutes); // Answer routes
+app.use("/api/question",authenticate , questionRoutes); // Question routes
+app.use("/api/answer",authenticate , answerRoutes); // Answer routes
 
 // Base route
 app.get("/", (req, res) => {
@@ -41,9 +49,4 @@ app.use((err, req, res, next) => {
     error: err.name || "InternalServerError",
     message: err.message || "An unexpected error occurred.",
   });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
 });

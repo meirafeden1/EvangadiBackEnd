@@ -10,16 +10,10 @@ const db = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
   connectionLimit: 10,
-});
+  waitForConnections: true,
+  queueLimit: 0,
+});  
 
-(async () => {
-  try {
-    const connection = await db.getConnection();
-    console.log("✅ MySQL connected successfully");
-    connection.release();
-  } catch (err) {
-    console.error("❌ MySQL connection error:", err.message);
-  }
-})();
+
 
 export default db;

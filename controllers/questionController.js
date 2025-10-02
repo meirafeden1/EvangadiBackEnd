@@ -49,13 +49,8 @@ export const getSingleQuestion = async (req, res) => {
 // ================== CREATE question ==================
 export const createQuestion = async (req, res) => {
   try {
-    // Get token from headers
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     const { title, description, tag } = req.body;
+
     if (!title || !description) {
       return res.status(400).json({
         error: "Bad Request",
@@ -64,10 +59,9 @@ export const createQuestion = async (req, res) => {
     }
 
     const question_id = uuidv4();
-
     await db.query(
       "INSERT INTO questions (question_id, user_id, title, description, tag, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())",
-      [question_id, decoded.id, title, description, tag || null]
+      [question_id, req.user.id, title, description, tag || null]
     );
 
     res.status(201).json({
