@@ -16,8 +16,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://candid-gingersnap-50518e.netlify.app/api/",
-      "bucolic-donut-bc31d3.netlify.app"
+      "https://candid-gingersnap-50518e.netlify.app",
+      "https://bucolic-donut-bc31d3.netlify.app"
     ],
     credentials: true,
   })
